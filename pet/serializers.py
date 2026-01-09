@@ -16,7 +16,7 @@ class PetSerializer(serializers.ModelSerializer):
     DigitalPetPassport and enforces the 5-pet limit per user.
     """
     owner = serializers.ReadOnlyField(source='owner.username')
-    age = serializers.CharField(source='age', read_only=True)
+    age = serializers.CharField(read_only=True)
     passport = DigitalPetPassportSerializer()
 
     class Meta:
