@@ -60,11 +60,90 @@ class DigitalPetPassport(models.Model):
         return f"Passport for {self.pet.name}"
 
 
+class VaccinationRecord(models.Model):
+    """
+    Represents a vaccination record for a pet.
+    """
+    pet = models.ForeignKey(
+        Pet,
+        on_delete=models.CASCADE,
+        related_name='vaccinations'
+    )
+    vaccine_name = models.CharField(max_length=100, help_text="Name of the vaccine (e.g., Rabies, Distemper)")
+    vaccination_date = models.DateField(help_text="Date when the vaccine was administered")
+    next_due_date = models.DateField(blank=True, null=True, help_text="Next due date for this vaccine")
+    veterinarian_name = models.CharField(max_length=100, blank=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.vaccine_name} for {self.pet.name} on {self.vaccination_date}"
+
+    class Meta:
+        ordering = ['-vaccination_date']
+
+
+class VeterinaryAppointment(models.Model):
+    """
+    Represents a veterinary appointment for a pet.
+    """
+    pet = models.ForeignKey(
+        Pet,
+        on_delete=models.CASCADE,
+        related_name='vet_appointments'
+    )
+    appointment_date = models.DateTimeField(help_text="Date and time of the appointment")
+    veterinarian_name = models.CharField(max_length=100)
+    clinic_name = models.CharField(max_length=200, blank=True)
+    reason = models.CharField(max_length=200, help_text="Reason for the visit")
+    notes = models.TextField(blank=True, help_text="Additional notes about the appointment")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.pet.name} - {self.reason} on {self.appointment_date.strftime('%Y-%m-%d %H:%M')}"
+
+    class Meta:
+        ordering = ['-appointment_date']
+
+
+class DailyCareLog(models.Model):
+    """
+    Represents a daily care activity log for a pet.
+    """
+    class ActivityType(models.TextChoices):
+        FEEDING = 'FEED', 'Feeding'
+        MEDICATION = 'MED', 'Medication'
+        WALK = 'WALK', 'Walk/Exercise'
+        OTHER = 'OTH', 'Other'
+
+    pet = models.ForeignKey(
+        Pet,
+        on_delete=models.CASCADE,
+        related_name='care_logs'
+    )
+    log_date = models.DateField(help_text="Date of the activity")
+    log_time = models.TimeField(help_text="Time of the activity")
+    activity_type = models.CharField(
+        max_length=4,
+        choices=ActivityType.choices,
+        default=ActivityType.OTHER
+    )
+    description = models.TextField(help_text="Description of the activity")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.pet.name} - {self.get_activity_type_display()} on {self.log_date} at {self.log_time}"
+
+    class Meta:
+        ordering = ['-log_date', '-log_time']
+
+
 class Reminder(models.Model):
     """
     Represents a reminder for a specific pet (e.g., for feeding or vet appointments).
     """
     class ReminderType(models.TextChoices):
+        VACCINATION = 'VACC', 'Vaccination'
         VETERINARY = 'VET', 'Veterinary Appointment'
         FEEDING = 'FEED', 'Feeding Time'
         OTHER = 'OTH', 'Other'
