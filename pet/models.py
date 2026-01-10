@@ -78,6 +78,9 @@ class BaseActivity(models.Model):
     class Meta:
         abstract = True  # Базовая модель, не создаёт таблицу в базе данных
 
+    def __str__(self):
+        return f"{self.day} for activity id {self.activity_log.id}"
+
 class Medication(BaseActivity):
     """
     Модель для учёта медицинских процедур и препаратов.
