@@ -1,68 +1,58 @@
-from django.shortcuts import render
-from rest_framework import viewsets, permissions
-from .models import *
-from .serializers import *
-# from .permissions import IsOwner
+from rest_framework.generics import ListCreateAPIView
+from rest_framework.response import Response
+from rest_framework import permissions, status
+from rest_framework.permissions import IsAuthenticated
+from .models import Pet, Medication, Feeding, Walk
+from .serializers import PetSerializer, MedicationSerializer, FeedingSerializer, WalkSerializer
 
-# Create your views here.
 
-class PetViewSet(viewsets.ModelViewSet):
+class PetCreateView(ListCreateAPIView):
     """
-    API endpoint that allows pets to be viewed or edited.
-    - Users can only see and manage their own pets.
-    - Admins can see and manage all pets.
+    GenericAPIView для просмотра и создания питомцев.
+    - Обычные пользователи видят только своих питомцев.
+    - Администраторы видят всех питомцев.
     """
     serializer_class = PetSerializer
-    # permission_classes = [permissions.IsAuthenticated, IsOwner]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         """
-        This view should return a list of all the pets
-        for the currently authenticated user.
+        Ограничивает список питомцев только для текущего пользователя.
         """
         if self.request.user.is_staff:
-            return Pet.objects.all() # Admin users see all pets
-        return Pet.objects.filter(owner=self.request.user)
+            return Pet.objects.all()  # Администратор видит всех питомцев
+        return Pet.objects.filter(owner=self.request.user)  # Пользователи видят только своих питомцев
 
     def perform_create(self, serializer):
         """
-        Assign the current user as the owner of the new pet.
+        Устанавливает владельцем текущего пользователя при создании профиля питомца.
+        Ограничивает создание профилей до 5 питомцев.
         """
+        # Проверка на количество профилей питомцев
+        pet_count = Pet.objects.filter(owner=self.request.user).count()
+        if pet_count >= 5:
+            return Response(
+                {"error": "You can not create more than 5 pets profiles."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Создаём профиль питомца
         serializer.save(owner=self.request.user)
 
-
-class ReminderViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows reminders to be viewed or edited.
-    - Users can only manage reminders for pets they own.
-    """
-    serializer_class = ReminderSerializer
-    permission_classes = [permissions.IsAuthenticated]
+class MedicationView(ListCreateAPIView):
+    serializer_class = MedicationSerializer
 
     def get_queryset(self):
-        """
-        This view should return a list of all reminders for the pets
-        owned by the currently authenticated user.
-        """
-        if self.request.user.is_staff:
-            return Reminder.objects.all() # Admin users see all reminders
-        return Reminder.objects.filter(pet__owner=self.request.user)
+        return Medication.objects.filter(pet__owner=self.request.user)
 
-    def get_serializer_context(self):
-        """
-        Pass the request context to the serializer.
-        """
-        return {'request': self.request}
-
-class PetDocumentViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows pet documents to be viewed or edited.
-    """
-    serializer_class = PetDocumentSerializer
+class FeedingView(ListCreateAPIView):
+    serializer_class = FeedingSerializer
 
     def get_queryset(self):
-        """
-        This view should return a list of all documents for
-        the pets owned by the currently authenticated user.
-        """
-        return PetDocument.objects.filter(pet__owner=self.request.user)
+        return Feeding.objects.filter(pet__owner=self.request.user)
+
+class WalkView(ListCreateAPIView):
+    serializer_class = WalkSerializer
+
+    def get_queryset(self):
+        return Walk.objects.filter(pet__owner=self.request.user)

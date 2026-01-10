@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.admin',
     'rest_framework',
+    'rest_framework.authtoken',
     'user',
     'pet',
 ]
@@ -51,6 +52,13 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',  # Для отображения имени
+        'rest_framework.authentication.TokenAuthentication',    # Для API-токенов
+    ],
+}
 
 ROOT_URLCONF = 'PetLink.urls'
 

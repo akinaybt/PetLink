@@ -1,0 +1,2 @@
+class IsOwner:
+    pass

@@ -2,7 +2,6 @@ from datetime import date
 
 from django.conf import settings
 from django.db import models
-# from user.models import CustomUser
 
 class Pet(models.Model):
     """
@@ -13,10 +12,16 @@ class Pet(models.Model):
         on_delete=models.CASCADE,
         related_name='pets'
     )
+    photo = models.ImageField(upload_to='pets_photo/', blank=True)
+
     name = models.CharField(max_length=100)
     species = models.CharField(max_length=50, help_text="e.g., Dog, Cat, Hamster")
     breed = models.CharField(max_length=50, blank=True, null=True)
     birth_date = models.DateField()
+
+    class Meta:
+        verbose_name = 'Pet'
+        verbose_name_plural = 'Pets'
 
     @property
     def age(self) -> str:
@@ -44,61 +49,65 @@ class Pet(models.Model):
     def __str__(self):
         return f"{self.name} ({self.species})"
 
-class DigitalPetPassport(models.Model):
-    """
-    Acts as a digital passport for a single pet, containing veterinary data.
-    """
-    pet = models.OneToOneField(
-        Pet,
-        on_delete=models.CASCADE,
-        primary_key=True,
-        related_name='passport'
-    )
-    vet_notes = models.TextField(blank=True, help_text="General veterinary notes.")
+class Appointment(models.Model):
+    pet = models.ForeignKey(Pet, on_delete=models.CASCADE, related_name='appointments')
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    appointment_date = models.DateField()
+    appointment_time = models.TimeField()
+
+    class Meta:
+        verbose_name = 'Appointment'
+        verbose_name_plural = 'Appointments'
 
     def __str__(self):
-        return f"Passport for {self.pet.name}"
+        return f"Appointment for {self.pet.name} on {self.appointment_date.strftime('%d-%m-%Y')} at {self.appointment_time.strftime('%H:%M')}"
 
 
-class Reminder(models.Model):
+class BaseActivity(models.Model):
     """
-    Represents a reminder for a specific pet (e.g., for feeding or vet appointments).
+    Абстрактная модель для хранения общих данных об активности.
     """
-    class ReminderType(models.TextChoices):
-        VETERINARY = 'VET', 'Veterinary Appointment'
-        FEEDING = 'FEED', 'Feeding Time'
-        OTHER = 'OTH', 'Other'
+    pet = models.ForeignKey(Pet, on_delete=models.CASCADE, related_name='activities')  # Связь с питомцем
+    date = models.DateField(null=False, blank=False)  # Дата активности
+    time = models.TimeField(null=False, blank=False)  # Время активности
+    notes = models.TextField(blank=True)  # Заметки
+    created_at = models.DateTimeField(auto_now_add=True)  # Дата создания записи
+    updated_at = models.DateTimeField(auto_now=True)  # Дата последнего обновления
 
-    pet = models.ForeignKey(
-        Pet,
-        on_delete=models.CASCADE,
-        related_name='reminders'
-    )
-    reminder_type = models.CharField(
-        max_length=4,
-        choices=ReminderType.choices,
-        default=ReminderType.OTHER
-    )
-    reminder_date = models.DateTimeField()
-    notes = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        abstract = True  # Базовая модель, не создаёт таблицу в базе данных
+
+class Medication(BaseActivity):
+    """
+    Модель для учёта медицинских процедур и препаратов.
+    """
+    pet = models.ForeignKey('Pet', on_delete=models.CASCADE, related_name='medications')  # Уникальное related_name
+    medication_name = models.CharField(max_length=100)  # Название препарата
+    dosage = models.CharField(max_length=50)  # Дозировка
+    frequency = models.IntegerField(default=1)  # Как часто нужно принимать (количество раз в день)
 
     def __str__(self):
-        return f"Reminder for {self.pet.name} on {self.reminder_date.strftime('%Y-%m-%d %H:%M')}"
+        return f"{self.medication_name} для {self.pet.name} ({self.date})"
 
 
-class PetDocument(models.Model):
+class Feeding(BaseActivity):
     """
-    Represents a document for a specific pet (e.g., receipts or medical documents).
+    Модель для учёта кормления питомца.
     """
-    pet = models.ForeignKey(
-        Pet,
-        on_delete=models.CASCADE,
-        related_name='documents'
-    )
-    document = models.FileField(upload_to='pet_documents/')
-    description = models.CharField(max_length=255, blank=True)
-    uploaded_at = models.DateTimeField(auto_now_add=True)
+    pet = models.ForeignKey('Pet', on_delete=models.CASCADE, related_name='feedings')  # Уникальное related_name
+    food_type = models.CharField(max_length=100)  # Тип корма
+    amount = models.CharField(max_length=50)  # Количество
 
     def __str__(self):
-        return f"Document for {self.pet.name} - {self.description}"
+        return f"{self.food_type} ({self.amount}) для {self.pet.name} ({self.date})"
+
+
+class Walk(BaseActivity):
+    """
+    Модель для учёта прогулок.
+    """
+    pet = models.ForeignKey('Pet', on_delete=models.CASCADE, related_name='walks')  # Уникальное related_name
+
+    def __str__(self):
+        return f"Прогулка с {self.pet.name} ({self.date})"
