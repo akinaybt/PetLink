@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -39,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'rest_framework',
     'rest_framework.authtoken',
+    'django_celery_beat',
     'user',
     'pet',
 ]
@@ -95,6 +100,10 @@ DATABASES = {
     }
 }
 
+# Celery
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -125,6 +134,18 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
+
+# settings.py
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' # Используем стандартный SMTP бэкенд
+EMAIL_HOST = 'smtp.gmail.com' # Или ваш SMTP сервер
+EMAIL_PORT = 587 # Порт для TLS
+EMAIL_USE_TLS = True # Использовать TLS
+# EMAIL_USE_SSL = False # Использовать SSL (если нужен)
+
+EMAIL_HOST_USER = 'abekmamebova364@gmail.com' # Ваш email
+EMAIL_HOST_PASSWORD = 'akina2006' # Ваш пароль или App Password для Gmail
+DEFAULT_FROM_EMAIL = 'your_email@example.com' # Email по умолчанию
 
 
 # Static files (CSS, JavaScript, Images)

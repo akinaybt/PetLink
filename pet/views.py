@@ -1,9 +1,14 @@
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.response import Response
-from rest_framework import permissions, status
+from rest_framework import permissions, status, viewsets
 from rest_framework.permissions import IsAuthenticated
-from .models import Pet, Medication, Feeding, Walk
-from .serializers import PetSerializer, MedicationSerializer, FeedingSerializer, WalkSerializer
+from .models import Pet, Medication, Feeding, Walk, Appointment
+from .serializers import (
+    PetSerializer, MedicationSerializer, FeedingSerializer,
+    WalkSerializer, AppointmentSerializer
+)
+from datetime import datetime, timedelta
+from .tasks import send_reminder
 
 
 class PetCreateView(ListCreateAPIView):
@@ -45,14 +50,41 @@ class MedicationView(ListCreateAPIView):
     def get_queryset(self):
         return Medication.objects.filter(pet__owner=self.request.user)
 
+    def perform_create(self, serializer):
+        medication = serializer.save()
+        execution_time = datetime.combine(medication.date, medication.time) - timedelta(minutes=30)
+
+        send_reminder.apply_assync_to(
+            args=['medication', medication.id],
+            eta=execution_time
+        )
+
+
 class FeedingView(ListCreateAPIView):
     serializer_class = FeedingSerializer
 
     def get_queryset(self):
         return Feeding.objects.filter(pet__owner=self.request.user)
 
+    def perform_create(self, serializer):
+        feeding = serializer.save()
+
+
 class WalkView(ListCreateAPIView):
     serializer_class = WalkSerializer
 
     def get_queryset(self):
         return Walk.objects.filter(pet__owner=self.request.user)
+
+    def perform_create(self, serializer):
+        walk = serializer.save()
+
+class AppointmentView(ListCreateAPIView):
+    serializer_class = AppointmentSerializer
+
+    def get_queryset(self):
+        return Appointment.objects.filter(pet__owner=self.request.user)
+
+    def perform_create(self, serializer):
+        appointment = serializer.save()
+

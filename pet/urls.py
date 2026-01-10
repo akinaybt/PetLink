@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import PetCreateView, MedicationView, FeedingView, WalkView
+from .views import PetCreateView, MedicationView, FeedingView, WalkView, AppointmentView
 
 
 urlpatterns = [

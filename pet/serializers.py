@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Pet, Medication, Feeding, Walk
+from .models import Pet, Medication, Feeding, Walk, Appointment
 
 
 class PetSerializer(serializers.ModelSerializer):
@@ -25,8 +25,21 @@ class FeedingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feeding
         fields = ['id', 'pet', 'date', 'time', 'notes', 'food_type', 'amount']
+        extra_kwargs = {
+            'id': {'read_only': True},  # ID должно быть только для чтения
+        }
+
+    def create(self, validated_data):
+        if 'custom_field' in validated_data:  # Если дополнительное поле передаётся
+            validated_data.pop('custom_field')  # Удалите его
+        return Feeding.objects.create(**validated_data)
 
 class WalkSerializer(serializers.ModelSerializer):
     class Meta:
         model = Walk
         fields = ['id', 'pet', 'date', 'time', 'notes']
+
+class AppointmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Appointment
+        fields = ['id', 'pet', 'name', 'appointment_date', 'appointment_time']
