@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Pet, Medication, Feeding, Walk, Appointment
+from .models import Pet, Medication, Feeding, Walk, Appointment, PetDocument
 
 
 class PetSerializer(serializers.ModelSerializer):
@@ -43,3 +43,12 @@ class AppointmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Appointment
         fields = ['id', 'pet', 'name', 'appointment_date', 'appointment_time']
+
+class PetDocumentSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для модели PetDocument.
+    """
+    class Meta:
+        model = PetDocument
+        fields = ['id', 'pet', 'file', 'title', 'document_type', 'uploaded_at']
+        read_only_fields = ['uploaded_at']

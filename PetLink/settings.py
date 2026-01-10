@@ -100,10 +100,7 @@ DATABASES = {
     }
 }
 
-# Celery
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -137,16 +134,15 @@ USE_TZ = True
 
 # settings.py
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' # Используем стандартный SMTP бэкенд
-EMAIL_HOST = 'smtp.gmail.com' # Или ваш SMTP сервер
-EMAIL_PORT = 587 # Порт для TLS
-EMAIL_USE_TLS = True # Использовать TLS
-# EMAIL_USE_SSL = False # Использовать SSL (если нужен)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'abekmambetova364@gmail.com'
+EMAIL_HOST_PASSWORD = 'akina2006'  # Замените на App Password
+DEFAULT_FROM_EMAIL = 'PetLink@gmail.com'
 
-EMAIL_HOST_USER = 'abekmamebova364@gmail.com' # Ваш email
-EMAIL_HOST_PASSWORD = 'akina2006' # Ваш пароль или App Password для Gmail
-DEFAULT_FROM_EMAIL = 'your_email@example.com' # Email по умолчанию
-
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/

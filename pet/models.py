@@ -111,3 +111,43 @@ class Walk(BaseActivity):
 
     def __str__(self):
         return f"Прогулка с {self.pet.name} ({self.date})"
+
+
+class PetDocument(models.Model):
+    """
+    Документы, принадлежащие конкретному питомцу:
+    ветпаспорт, анализы, справки, страховка и т.д.
+    """
+    pet = models.ForeignKey(
+        Pet,
+        on_delete=models.CASCADE,
+        related_name="documents"
+    )
+
+    file = models.FileField(upload_to="pet_documents/")
+    title = models.CharField(
+        max_length=150,
+        help_text="Например: Ветпаспорт, Анализ крови, Вакцинация"
+    )
+
+    document_type = models.CharField(
+        max_length=50,
+        choices=[
+            ("passport", "Passport"),
+            ("vaccination", "Vaccination"),
+            ("analysis", "Medical Analysis"),
+            ("insurance", "Insurance"),
+            ("other", "Other"),
+        ],
+        default="other"
+    )
+
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Pet Document"
+        verbose_name_plural = "Pet Documents"
+        ordering = ["-uploaded_at"]
+
+    def str(self):
+        return f"{self.title} – {self.pet.name}"

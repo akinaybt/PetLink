@@ -2,10 +2,10 @@ from rest_framework.generics import ListCreateAPIView
 from rest_framework.response import Response
 from rest_framework import permissions, status, viewsets
 from rest_framework.permissions import IsAuthenticated
-from .models import Pet, Medication, Feeding, Walk, Appointment
+from .models import Pet, Medication, Feeding, Walk, Appointment, PetDocument
 from .serializers import (
     PetSerializer, MedicationSerializer, FeedingSerializer,
-    WalkSerializer, AppointmentSerializer
+    WalkSerializer, AppointmentSerializer, PetDocumentSerializer
 )
 from datetime import datetime, timedelta
 from .tasks import send_reminder
@@ -88,3 +88,23 @@ class AppointmentView(ListCreateAPIView):
     def perform_create(self, serializer):
         appointment = serializer.save()
 
+
+class PetDocumentView(ListCreateAPIView):
+    """
+    API для загрузки и получения документов питомца.
+    """
+    serializer_class = PetDocumentSerializer
+
+    def get_queryset(self):
+        """
+        Получить список документов для конкретного питомца.
+        """
+        pet_id = self.kwargs['pet_id']
+        return PetDocument.objects.filter(pet_id=pet_id)
+
+    def perform_create(self, serializer):
+        """
+        Устанавливаем связь документа с питомцем во в��емя создания.
+        """
+        pet_id = self.kwargs['pet_id']
+        serializer.save(pet_id=pet_id)
