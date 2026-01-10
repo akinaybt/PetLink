@@ -12,9 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -43,7 +41,6 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'rest_framework',
     'rest_framework.authtoken',
-    'django_celery_beat',
     'user',
     'pet',
 ]
@@ -100,9 +97,7 @@ DATABASES = {
     }
 }
 
-CELERY_BROKER_URL = 'redis://redis:6379/0'
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -139,7 +134,7 @@ USE_TZ = True
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'abekmambetova364@gmail.com'
-EMAIL_HOST_PASSWORD = 'akina2006'  # Замените на App Password
+EMAIL_HOST_PASSWORD = 'quww woqa ddrq nlhx'  # Замените на App Password
 DEFAULT_FROM_EMAIL = 'PetLink@gmail.com'
 
 EMAIL_PORT = 587
