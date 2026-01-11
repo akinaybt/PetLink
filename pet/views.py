@@ -12,9 +12,12 @@ from .serializers import (
 
 class PetCreateView(ListCreateAPIView):
     """
-    GenericAPIView для просмотра и создания питомцев.
-    - Обычные пользователи видят только своих питомцев.
-    - Администраторы видят всех питомцев.
+    Provides functionality for listing and creating pet profiles.
+
+    This class-based view allows authenticated users to list and create profiles
+    for their pets. Regular users can view and manage only their own pet profiles,
+    while administrative users have access to see all pet profiles. The creation
+    process is limited to a maximum of 5 pet profiles per user.
     """
     serializer_class = PetSerializer
     permission_classes = [IsAuthenticated]
@@ -44,6 +47,13 @@ class PetCreateView(ListCreateAPIView):
         serializer.save(owner=self.request.user)
 
 class MedicationView(ListCreateAPIView):
+    """
+    Handles the listing and creation of Medication objects for the logged-in user.
+
+    This class enables the retrieval of Medication objects associated with the pets
+    belonging to the currently authenticated user. It also allows the creation of
+    new Medication objects and associates them with the user.
+    """
     serializer_class = MedicationSerializer
 
     def get_queryset(self):
@@ -53,6 +63,13 @@ class MedicationView(ListCreateAPIView):
         medication = serializer.save()
 
 class FeedingView(ListCreateAPIView):
+    """
+    Handles the creation and retrieval of feeding records associated with pets.
+
+    This view provides functionality to create new feeding records and retrieve a
+    list of feeding records filtered by the current user's pets. The view ensures
+    that users can only access feeding records related to their own pets.
+    """
     serializer_class = FeedingSerializer
 
     def get_queryset(self):
@@ -62,6 +79,14 @@ class FeedingView(ListCreateAPIView):
         activity = serializer.save()
 
 class WalkView(ListCreateAPIView):
+    """
+    Handles the list and creation of Walk objects specific to the logged-in user.
+
+    This class-based view is designed to manage Walk objects by allowing users to
+    retrieve a list of their walk instances or create new ones. It ensures that the
+    views are tied to the authenticated user by filtering the Walk objects by the
+    current user.
+    """
     serializer_class = WalkSerializer
 
     def get_queryset(self):
@@ -71,6 +96,13 @@ class WalkView(ListCreateAPIView):
         walk = serializer.save()
 
 class AppointmentView(ListCreateAPIView):
+    """
+    Handles creation and retrieval of appointment data for the authenticated user.
+
+    This class-based view enables the creation and listing of appointments through
+    appropriate HTTP methods. It restricts the displayed appointments to those
+    associated with the pets of the currently authenticated user.
+    """
     serializer_class = AppointmentSerializer
 
     def get_queryset(self):
@@ -79,20 +111,17 @@ class AppointmentView(ListCreateAPIView):
 
 class PetDocumentView(ListCreateAPIView):
     """
-    API для загрузки и получения документов питомца.
-    """
+    API view for creating and retrieving pet documents.
+
+    This class provides functionality to list and create documents associated with a
+    specific pet. It filters documents based on the provided pet ID and ensures that
+    the created documents are linked to the specified pet.    """
     serializer_class = PetDocumentSerializer
 
     def get_queryset(self):
-        """
-        Получить список документов для конкретного питомца.
-        """
         pet_id = self.kwargs['pet_id']
         return PetDocument.objects.filter(pet_id=pet_id)
 
     def perform_create(self, serializer):
-        """
-        Устанавливаем связь документа с питомцем во в��емя создания.
-        """
         pet_id = self.kwargs['pet_id']
         serializer.save(pet_id=pet_id)

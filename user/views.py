@@ -11,8 +11,12 @@ from .models import CustomUser
 
 class CustomUserRegistrationView(GenericAPIView):
     """
-    Представление для регистрации нового пользователя.
-    Ограничено только действиями для регистрации.
+    Handles user registration with custom logic.
+
+    This class provides an API endpoint for registering new users. It processes
+    incoming POST requests, validates the data using a serializer, and creates
+    a new user upon successful validation. If the data validation fails, it
+    returns the appropriate error messages.
     """
     serializer_class = CustomUserSerializer
 
@@ -25,11 +29,15 @@ class CustomUserRegistrationView(GenericAPIView):
 
 class LoginView(GenericAPIView):
     """
-    GenericAPIView для аутентификации пользователя.
-    Возвращает токен после успешного логина.
+    Handles user login through REST API.
+
+    This class-based view provides functionality for authenticating users via
+    email and password. Upon successful authentication, it attaches the user
+    to the current session and generates or retrieves an authentication token
+    for the user. The view is serializer-driven, allowing input data to be validated
+    through the specified serializer.
     """
-    serializer_class = LoginSerializer  # Используйте сериалайзер, если хотите валидировать входящие данные.
-    # permission_classes = AllowAny
+    serializer_class = LoginSerializer
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -41,10 +49,9 @@ class LoginView(GenericAPIView):
         user = authenticate(email=email, password=password)
 
         if user is not None:
-            # Аутентифицируем пользователя, чтобы связать данные с сессией
-            login(request, user)  # Это добавляет пользователя в текущую сессию
-
-            # Генерация токена
+            # Authenticating the user to link the data to the session
+            login(request, user)  # Adds the user to the current session
+            # Token generation
             token, created = Token.objects.get_or_create(user=user)
             return Response(
                 {
