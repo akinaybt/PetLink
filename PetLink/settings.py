@@ -17,7 +17,6 @@ DEBUG = os.getenv("DEBUG", "False") == "True"
 
 # Allow hosts dynamically for production
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
-# Example: ALLOWED_HOSTS = ["your-domain.com", "backend-service"]
 
 # Application definition
 INSTALLED_APPS = [
@@ -73,8 +72,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'PetLink.wsgi.application'
 
-# Database Configuration for Railway PostgreSQL
-DATABASE_URL = os.getenv("DATABASE_URL")  # Ensure this is set in your Railway environment variables
+DATABASE_URL = os.getenv("DATABASE_URL")
 DATABASES = {
     'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
 }
