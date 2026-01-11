@@ -7,8 +7,7 @@ from .serializers import (
     PetSerializer, MedicationSerializer, FeedingSerializer,
     WalkSerializer, AppointmentSerializer, PetDocumentSerializer
 )
-from datetime import datetime, timedelta
-from .tasks import send_reminder
+
 
 
 class PetCreateView(ListCreateAPIView):
@@ -52,13 +51,6 @@ class MedicationView(ListCreateAPIView):
 
     def perform_create(self, serializer):
         medication = serializer.save()
-        execution_time = datetime.combine(medication.date, medication.time) - timedelta(minutes=30)
-
-        send_reminder.apply_assync_to(
-            args=['medication', medication.id],
-            eta=execution_time
-        )
-
 
 class FeedingView(ListCreateAPIView):
     serializer_class = FeedingSerializer
@@ -69,14 +61,6 @@ class FeedingView(ListCreateAPIView):
     def perform_create(self, serializer):
         activity = serializer.save()
 
-        # Планируем задачу напоминания
-        execution_time = datetime.combine(activity.date, activity.time) - timedelta(minutes=5)
-        send_reminder.apply_async(
-            args=['feeding', activity.id],
-            eta=execution_time  # Указываем точное время выполнения
-        )
-
-
 class WalkView(ListCreateAPIView):
     serializer_class = WalkSerializer
 
@@ -86,27 +70,11 @@ class WalkView(ListCreateAPIView):
     def perform_create(self, serializer):
         walk = serializer.save()
 
-        # Запланировать задачу на указанную дату и время
-        execution_time = datetime.combine(walk.date, walk.time) - timedelta(minutes=30)
-        send_reminder.apply_async(
-            args=['walk', walk.id],
-            eta=execution_time
-        )
-
 class AppointmentView(ListCreateAPIView):
     serializer_class = AppointmentSerializer
 
     def get_queryset(self):
         return Appointment.objects.filter(pet__owner=self.request.user)
-
-    def perform_create(self, serializer):
-        appointment = serializer.save()
-        execution_time = datetime.combine(appointment.appointment_date, appointment.appointment_time) - timedelta(hours=2)
-
-        send_reminder.apply_async(
-            args=['appointment', appointment.id],
-            eta=execution_time
-        )
 
 
 class PetDocumentView(ListCreateAPIView):
